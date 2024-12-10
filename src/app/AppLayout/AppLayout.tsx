@@ -2,6 +2,8 @@ import * as React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Button,
+  DropdownItem,
+  DropdownList,
   Masthead,
   MastheadBrand,
   MastheadLogo,
@@ -18,13 +20,73 @@ import {
 } from '@patternfly/react-core';
 import { IAppRoute, IAppRouteGroup, routes } from '@app/routes';
 import { BarsIcon } from '@patternfly/react-icons';
+import { Conversation, MessageProps } from '@patternfly/chatbot';
+import { ChatbotLayout } from './ChatbotLayout';
 
 interface IAppLayout {
   children: React.ReactNode;
 }
 
 const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
+  const removeConversation = (id: string) => {
+    setConversations((prevConversations) => {
+      const newConversations = {};
+
+      // Iterate through the previous conversations
+      Object.keys(prevConversations).forEach((key) => {
+        // Filter out conversations with the given id from each category
+        const filteredConversations = prevConversations[key].filter((conversation) => conversation.id !== id);
+
+        // Only add back the category if there are remaining conversations
+        if (filteredConversations.length > 0) {
+          newConversations[key] = filteredConversations;
+        }
+      });
+
+      // Return the updated state
+      return newConversations;
+    });
+  };
+
+  const generateMenuItems = (id: string) => [
+    <DropdownList key={id}>
+      <DropdownItem value="Delete" id="Delete" onClick={() => removeConversation(id)}>
+        Delete
+      </DropdownItem>
+    </DropdownList>,
+  ];
+
+  const initialConversations: { [key: string]: Conversation[] } = {
+    Today: [{ id: '1', text: 'Red Hat products and services', menuItems: generateMenuItems('1') }],
+    'This month': [
+      {
+        id: '2',
+        text: 'Enterprise Linux installation and setup',
+        menuItems: generateMenuItems('2'),
+      },
+      { id: '3', text: 'Troubleshoot system crash', menuItems: generateMenuItems('3') },
+    ],
+    March: [
+      { id: '4', text: 'Ansible security and updates', menuItems: generateMenuItems('4') },
+      { id: '5', text: 'Red Hat certification', menuItems: generateMenuItems('5') },
+      { id: '6', text: 'Lightspeed user documentation', menuItems: generateMenuItems('6') },
+    ],
+    February: [
+      { id: '7', text: 'Crashing pod assistance', menuItems: generateMenuItems('7') },
+      { id: '8', text: 'OpenShift AI pipelines', menuItems: generateMenuItems('8') },
+      { id: '9', text: 'Updating subscription plan', menuItems: generateMenuItems('9') },
+      { id: '10', text: 'Red Hat licensing options', menuItems: generateMenuItems('10') },
+    ],
+    January: [
+      { id: '11', text: 'RHEL system performance', menuItems: generateMenuItems('11') },
+      { id: '12', text: 'Manage user accounts', menuItems: generateMenuItems('12') },
+    ],
+  };
+
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [messages, setMessages] = React.useState<MessageProps[]>([]);
+  const [conversations, setConversations] = React.useState<{ [key: string]: Conversation[] }>(initialConversations);
+
   const masthead = (
     <Masthead>
       <MastheadMain>
@@ -90,11 +152,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
 
   const renderNavItem = (route: IAppRoute, index: number) => (
     <NavItem key={`${route.label}-${index}`} id={`${route.label}-${index}`} isActive={route.path === location.pathname}>
-      <NavLink
-        to={route.path}
-      >
-        {route.label}
-      </NavLink>
+      <NavLink to={route.path}>{route.label}</NavLink>
     </NavItem>
   );
 
@@ -139,15 +197,19 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
       Skip to Content
     </SkipToContent>
   );
+
   return (
-    <Page
-      mainContainerId={pageId}
-      masthead={masthead}
-      sidebar={sidebarOpen && Sidebar}
-      skipToContent={PageSkipToContent}
-    >
-      {children}
-    </Page>
+    <>
+      <Page
+        mainContainerId={pageId}
+        masthead={masthead}
+        sidebar={sidebarOpen && Sidebar}
+        skipToContent={PageSkipToContent}
+      >
+        {children}
+      </Page>
+      <ChatbotLayout conversations={conversations} messages={messages} setMessages={setMessages} />
+    </>
   );
 };
 
