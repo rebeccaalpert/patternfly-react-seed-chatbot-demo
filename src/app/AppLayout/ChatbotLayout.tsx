@@ -118,11 +118,12 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({ conversati
       avatar: UserAvatar,
       content: matchingConvo.conversation.text,
       timestamp: date.toLocaleString(),
+      avatarProps: { isBordered: true },
     };
     setMessages([newMessage]);
     scrollToBottom();
     // make announcement to assistive devices that new message has loaded
-    setAnnouncement(`Message from Bot: ${newMessage.content}`);
+    setAnnouncement(`Message from User: ${newMessage.content}`);
   };
 
   // you will likely want to come up with your own unique id function; this is for demo purposes only
