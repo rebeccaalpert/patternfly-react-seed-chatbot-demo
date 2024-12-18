@@ -1,14 +1,21 @@
 import * as React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
+  Avatar,
   Button,
+  ButtonVariant,
+  Dropdown,
   DropdownItem,
   DropdownList,
+  Icon,
   Masthead,
   MastheadBrand,
+  MastheadContent,
   MastheadLogo,
   MastheadMain,
   MastheadToggle,
+  MenuToggle,
+  MenuToggleElement,
   Nav,
   NavExpandable,
   NavItem,
@@ -17,11 +24,16 @@ import {
   PageSidebar,
   PageSidebarBody,
   SkipToContent,
+  Toolbar,
+  ToolbarContent,
+  ToolbarGroup,
+  ToolbarItem,
 } from '@patternfly/react-core';
 import { IAppRoute, IAppRouteGroup, routes } from '@app/routes';
-import { BarsIcon } from '@patternfly/react-icons';
+import { BarsIcon, CogIcon, OutlinedCommentsIcon } from '@patternfly/react-icons';
 import { Conversation, MessageProps } from '@patternfly/chatbot';
 import { ChatbotLayout } from './ChatbotLayout';
+import UserAvatar from '@app/bgimages/user_avatar.svg';
 
 interface IAppLayout {
   children: React.ReactNode;
@@ -86,6 +98,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [messages, setMessages] = React.useState<MessageProps[]>([]);
   const [conversations, setConversations] = React.useState<{ [key: string]: Conversation[] }>(initialConversations);
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false);
 
   const masthead = (
     <Masthead>
@@ -145,6 +158,46 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
           </MastheadLogo>
         </MastheadBrand>
       </MastheadMain>
+      <MastheadContent>
+        <Toolbar id="toolbar" isStatic>
+          <ToolbarContent>
+            <ToolbarGroup
+              variant="action-group-plain"
+              align={{ default: 'alignEnd' }}
+              gap={{ default: 'gapNone', md: 'gapMd' }}
+            >
+              <ToolbarItem>
+                <Button aria-label="Settings" variant={ButtonVariant.plain} icon={<CogIcon />} />
+              </ToolbarItem>
+              <ToolbarItem>
+                <Button
+                  onClick={() => setIsChatbotOpen(!isChatbotOpen)}
+                  aria-label="Toggle chatbot"
+                  variant={ButtonVariant.plain}
+                >
+                  {
+                    <Icon>
+                      <OutlinedCommentsIcon />
+                    </Icon>
+                  }
+                </Button>
+              </ToolbarItem>
+
+              <ToolbarItem visibility={{ default: 'hidden', md: 'visible' }}>
+                <Dropdown
+                  isOpen={false}
+                  popperProps={{ position: 'right' }}
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle ref={toggleRef} isExpanded={false} icon={<Avatar src={UserAvatar} alt="" size="sm" />}>
+                      Ned Username
+                    </MenuToggle>
+                  )}
+                ></Dropdown>
+              </ToolbarItem>
+            </ToolbarGroup>
+          </ToolbarContent>
+        </Toolbar>
+      </MastheadContent>
     </Masthead>
   );
 
@@ -208,7 +261,13 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
       >
         {children}
       </Page>
-      <ChatbotLayout conversations={conversations} messages={messages} setMessages={setMessages} />
+      <ChatbotLayout
+        isOpen={isChatbotOpen}
+        setIsOpen={setIsChatbotOpen}
+        conversations={conversations}
+        messages={messages}
+        setMessages={setMessages}
+      />
     </>
   );
 };

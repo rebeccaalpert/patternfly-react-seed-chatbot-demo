@@ -1,6 +1,12 @@
 import * as React from 'react';
-import { Button, DropEvent, DropdownGroup, DropdownItem, DropdownList, Icon } from '@patternfly/react-core';
-import { CloseIcon, ExpandIcon, OpenDrawerRightIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons';
+import { Button, Divider, DropEvent, DropdownGroup, DropdownItem, DropdownList, Icon } from '@patternfly/react-core';
+import {
+  CloseIcon,
+  ExpandIcon,
+  FingerprintIcon,
+  OpenDrawerRightIcon,
+  OutlinedWindowRestoreIcon,
+} from '@patternfly/react-icons';
 import {
   Chatbot,
   ChatbotAlert,
@@ -15,7 +21,6 @@ import {
   ChatbotHeaderMenu,
   ChatbotHeaderOptionsDropdown,
   ChatbotHeaderTitle,
-  ChatbotToggle,
   ChatbotWelcomePrompt,
   Conversation,
   FileDetailsLabel,
@@ -24,6 +29,7 @@ import {
   MessageBar,
   MessageBox,
   MessageProps,
+  TermsOfUse,
 } from '@patternfly/chatbot';
 import PatternFlyAvatar from '@app/bgimages/patternfly_avatar.svg';
 import UserAvatar from '@app/bgimages/user_avatar.svg';
@@ -32,6 +38,8 @@ interface ChatbotLayoutProps {
   conversations: { [key: string]: Conversation[] };
   messages: MessageProps[];
   setMessages: (messages: any) => void;
+  isOpen: boolean;
+  setIsOpen: (bool: boolean) => void;
 }
 
 const footnoteProps = {
@@ -65,8 +73,13 @@ const sendContent = `It looks like you're experiencing a browser issue. please t
 4. Disable extensions: Temporarily disable browser extensions to see if they are causing issues
 5. Check internet connection: Verify that you have a stable internet connection`;
 
-const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({ conversations, messages, setMessages }) => {
-  const [isChatbotVisible, setIsChatbotVisible] = React.useState(false);
+const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
+  conversations,
+  messages,
+  setMessages,
+  isOpen,
+  setIsOpen,
+}) => {
   const [displayMode, setDisplayMode] = React.useState(ChatbotDisplayMode.default);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [announcement, setAnnouncement] = React.useState<string>();
@@ -77,9 +90,9 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({ conversati
   const [filteredConversations, setFilteredConversations] = React.useState<{ [key: string]: Conversation[] }>(
     conversations,
   );
+  const [showTermsOfUse, setShowTermsOfUse] = React.useState(false);
   const [value, setValue] = React.useState('');
   const scrollToBottomRef = React.useRef<HTMLDivElement>(null);
-  const toggleRef = React.useRef<HTMLButtonElement>(null);
   const chatbotRef = React.useRef<HTMLDivElement>(null);
   const historyRef = React.useRef<HTMLButtonElement>(null);
 
@@ -507,11 +520,15 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({ conversati
     scrollToBottom();
   };
 
-  const onSelectDisplayMode = (
+  const onSelectMenuItem = (
     _event: React.MouseEvent<Element, MouseEvent> | undefined,
     value: string | number | undefined,
   ) => {
-    setDisplayMode(value as ChatbotDisplayMode);
+    if (value === 'Terms of use') {
+      setShowTermsOfUse(true);
+    } else {
+      setDisplayMode(value as ChatbotDisplayMode);
+    }
   };
 
   // handle file drop/selection
@@ -550,9 +567,51 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({ conversati
     setFile(undefined);
   };
 
+  const introduction = (
+    <>
+      <p>
+        Welcome to PatternFly! These terms and conditions outline the rules and regulations for the use of
+        PatternFly&apos;s website, located at <a href="https://patternfly.org">www.patternfly.org.</a>
+      </p>
+      <p>
+        By accessing this website, you are agreeing with our terms and conditions. If you do not agree to all of these
+        terms and conditions, do not continue to use PatternFly.
+      </p>
+    </>
+  );
+
+  const terminology = (
+    <>
+      <p>
+        The following terminology applies to these Terms and Conditions, Privacy Statement, Disclaimer Notice, and all
+        Agreements:
+      </p>
+      <ul>
+        <li>
+          &quot;Client&quot;, &quot;You&quot;, and &quot;Your&quot; refer to you, the person using this website who is
+          compliant with the Company&apos;s terms and conditions.
+        </li>
+        <li>
+          &quot;The Company&quot;, &quot;Ourselves&quot;, &quot;We&quot;, &quot;Our&quot;, and &quot;Us&quot;, refer to
+          our Company. &quot;Party&quot;, &quot;Parties&quot;, or &quot;Us&quot;, refers to both the Client and
+          ourselves.
+        </li>
+      </ul>
+    </>
+  );
+
+  const body = (
+    <>
+      <h2>Introduction</h2>
+      {introduction}
+      <h2>Terminology</h2>
+      {terminology}
+    </>
+  );
+
   return (
     <>
-      <Chatbot displayMode={displayMode} ref={chatbotRef} isVisible={isChatbotVisible}>
+      <Chatbot displayMode={displayMode} ref={chatbotRef} isVisible={isOpen}>
         <ChatbotConversationHistoryNav
           displayMode={displayMode}
           onDrawerToggle={() => {
@@ -592,7 +651,7 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({ conversati
                   <ChatbotHeaderTitle displayMode={displayMode}></ChatbotHeaderTitle>
                 </ChatbotHeaderMain>
                 <ChatbotHeaderActions>
-                  <ChatbotHeaderOptionsDropdown onSelect={onSelectDisplayMode}>
+                  <ChatbotHeaderOptionsDropdown onSelect={onSelectMenuItem}>
                     <DropdownGroup label="Display mode">
                       <DropdownList>
                         <DropdownItem
@@ -619,13 +678,27 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({ conversati
                         >
                           <span>Fullscreen</span>
                         </DropdownItem>
+                        <Divider />
+                        <DropdownItem
+                          value="Terms of use"
+                          key="Terms"
+                          icon={
+                            <Icon>
+                              <FingerprintIcon />
+                            </Icon>
+                          }
+                          isSelected={showTermsOfUse === true}
+                          style={{ display: 'flex', alignItems: 'baseline' }}
+                        >
+                          Terms of use
+                        </DropdownItem>
                       </DropdownList>
                     </DropdownGroup>
                   </ChatbotHeaderOptionsDropdown>
                   <Button
                     className="pf-chatbot__button--toggle-menu"
                     variant="plain"
-                    onClick={() => setIsChatbotVisible(!isChatbotVisible)}
+                    onClick={() => setIsOpen(!isOpen)}
                     aria-label="Close ChatBot"
                     icon={
                       <Icon size="xl" isInline>
@@ -695,12 +768,22 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({ conversati
           }
         ></ChatbotConversationHistoryNav>
       </Chatbot>
-      <ChatbotToggle
+      {/*<ChatbotToggle
         tooltipLabel="ChatBot"
-        isChatbotVisible={isChatbotVisible}
-        onToggleChatbot={() => setIsChatbotVisible(!isChatbotVisible)}
+        isChatbotVisible={isOpen}
+        onToggleChatbot={() => setIsOpen(!isOpen)}
         ref={toggleRef}
-      />
+      />*/}
+      {showTermsOfUse && (
+        <TermsOfUse
+          onSecondaryAction={() => setShowTermsOfUse(false)}
+          isModalOpen={showTermsOfUse}
+          handleModalToggle={() => setShowTermsOfUse(!showTermsOfUse)}
+          displayMode={displayMode}
+        >
+          {body}
+        </TermsOfUse>
+      )}
     </>
   );
 };
