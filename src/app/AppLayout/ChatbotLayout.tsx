@@ -66,13 +66,6 @@ If the bug can be seen on both the React and HTML/CSS side, create a bug issue i
 const quickResponseThreeContent = `Design tokens are variables that store visual design attributes like color,  typography, and spacing. Tokens have a name and value that conveys their associated design style, making their purpose clear and recognizable.
 PatternFly's tokens are set up as variables and styles within Figma, and are  available as CSS variables for development. Tokens are only available as part of the PatternFly 6 release, so make sure you [upgrade to PatternFly 6](https://www.patternfly.org/get-started/upgrade/) and/or [install our Figma library](https://www.patternfly.org/get-started/design/#figma-library) in order to take advantage of tokens. PatternFly 6 components, charts, and extensions are all built with tokens.`;
 
-const sendContent = `It looks like you're experiencing a browser issue. please try the followowing: 
-1. Restart the browser: Try quitting and reloading the browser to see if the problem persists.
-2. Clear cache and cookies: Delete temporary data stored by your browser to resolve potential conflicts.
-3. Update your browser: Check for and install any available updates to ensure you have the latest features and bug fixes
-4. Disable extensions: Temporarily disable browser extensions to see if they are causing issues
-5. Check internet connection: Verify that you have a stable internet connection`;
-
 const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
   conversations,
   messages,
@@ -145,13 +138,6 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
     return id.toString();
   };
 
-  const sendUserMessage = React.useCallback((newUserMessage) => {
-    setMessages((prevMessages: MessageProps[]) => [...prevMessages, newUserMessage]);
-    scrollToBottom();
-    // make announcement to assistive devices that new message has loaded
-    setAnnouncement(`Message from Bot: ${newUserMessage.content}`);
-  }, []);
-
   const sendBotMessage = async (newBotMessage) => {
     // we can't use structuredClone since messages contains functions, but we can't mutate
     // items that are going into state or the UI won't update correctly
@@ -219,12 +205,12 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
     return date.toLocaleString();
   };
 
-  const onQuickResponseOneClick = async () => {
+  const onQuickResponseOneClick = async (message: string) => {
     const date = new Date();
     await sendMessagePair(
       {
         id: generateId(),
-        content: 'Help me file a bug',
+        content: message,
         role: 'user',
         avatar: UserAvatar,
         avatarProps: { isBordered: true },
@@ -271,12 +257,12 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
     );
   };
 
-  const onQuickResponseTwoClick = async () => {
+  const onQuickResponseTwoClick = async (message: string) => {
     const date = new Date();
     await sendMessagePair(
       {
         id: generateId(),
-        content: 'What is PatternFly?',
+        content: message,
         role: 'user',
         avatar: UserAvatar,
         avatarProps: { isBordered: true },
@@ -303,12 +289,12 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
     );
   };
 
-  const onQuickResponseThreeClick = async () => {
+  const onQuickResponseThreeClick = async (message: string) => {
     const date = new Date();
     await sendMessagePair(
       {
         id: generateId(),
-        content: 'What are design tokens?',
+        content: message,
         role: 'user',
         avatar: UserAvatar,
         avatarProps: { isBordered: true },
@@ -325,12 +311,13 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
     );
   };
 
-  const onQuickResponseFourClick = async () => {
+  const onTopicOneClick = async () => {
     const date = new Date();
+
     await sendMessagePair(
       {
         id: generateId(),
-        content: 'Red Hatter Help Request',
+        content: 'What is PatternFly?',
         role: 'user',
         avatar: UserAvatar,
         avatarProps: { isBordered: true },
@@ -338,91 +325,34 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
       },
       {
         id: generateId(),
-        content: `Navigate to the Red Hatter Help Desk and locate the [Support Services](https://redhat.service-now.com/help?id=rh_service_catalog) page. You will find a catalog of popular requests with the ability to file a request for your browser or laptop issue.`,
+        content: 'Sure! I can help with your questions about PatternFly. What information do you need?',
         role: 'bot',
         name: 'Bot',
         avatar: PatternFlyAvatar,
-        sources: {
-          sources: [
-            {
-              title: 'Red Hatter Help',
-              link: 'https://redhat.service-now.com/help',
-              body: (
-                <>
-                  <a href="https://redhat.service-now.com/help">Red Hatter Help</a> is your go-to place to get the help
-                  you need, whenever and wherever you need it. It is a self-service support portal, powered by
-                  ServiceNow where you can seek support from Red Hat’s internal business units.
-                </>
-              ),
-            },
-            {
-              title: 'PC Refresh',
-              link: 'https://redhat.service-now.com/help?id=sc_cat_item&sys_id=32d3e91ab852310077ed3a6cb584d9df',
-              body: 'Request an updated or replacement laptop.',
-            },
-          ],
-        },
+        quickResponses: [
+          {
+            id: '1',
+            content: 'How do I report a bug?',
+            onClick: () => onQuickResponseOneClick('How do I report a bug?'),
+          },
+          { id: '2', content: 'What is PatternFly?', onClick: () => onQuickResponseTwoClick('What is PatternFly?') },
+          {
+            id: '3',
+            content: 'What are design tokens?',
+            onClick: () => onQuickResponseThreeClick('What are design tokens?'),
+          },
+        ],
         timestamp: date.toLocaleString(),
       },
     );
-  };
-
-  const onQuickResponseFiveClick = async () => {
-    const date = new Date();
-    await sendBotMessage({
-      role: 'bot',
-      name: 'Bot',
-      avatar: PatternFlyAvatar,
-      content: 'Please upload an image of your issue',
-      timestamp: date.toLocaleString(),
-    });
-  };
-
-  const onTopicOneClick = async () => {
-    const date = new Date();
-    sendBotMessage({
-      id: generateId(),
-      content: 'Hi 👋 How can I help?',
-      role: 'bot',
-      name: 'Bot',
-      avatar: PatternFlyAvatar,
-      quickResponses: [
-        {
-          id: '1',
-          content: 'Help me file a bug',
-          onClick: () => onQuickResponseOneClick(),
-        },
-        { id: '2', content: 'What is PatternFly?', onClick: onQuickResponseTwoClick },
-        { id: '3', content: 'What are design tokens?', onClick: onQuickResponseThreeClick },
-      ],
-      timestamp: date.toLocaleString(),
-    });
-    setShowWelcomePrompts(false);
-  };
-
-  const onTopicTwoClick = () => {
-    const date = new Date();
-    sendBotMessage({
-      id: generateId(),
-      content: 'Hi 👋 What seems to be the issue?',
-      role: 'bot',
-      name: 'Bot',
-      avatar: PatternFlyAvatar,
-      timestamp: date.toLocaleString(),
-    });
     setShowWelcomePrompts(false);
   };
 
   const welcomePrompts = [
     {
-      title: 'Topic 1',
-      message: 'I need help with PatternFly',
+      title: 'What is PatternFly?',
+      message: "Learn about the PatternFly design system and how it's used.",
       onClick: onTopicOneClick,
-    },
-    {
-      title: 'Topic 2',
-      message: 'I am having a browser issue',
-      onClick: onTopicTwoClick,
     },
   ];
 
@@ -452,67 +382,43 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
 
   const handleSend = async (message: string) => {
     setShowWelcomePrompts(false);
-    switch (message) {
-      case 'My browser is not loading':
-      case 'My browser is not loading.':
-        await sendMessagePair(
-          {
-            id: generateId(),
-            role: 'user',
-            avatar: UserAvatar,
-            avatarProps: { isBordered: true },
-            content: message,
-            timestamp: getDate(),
-          },
-          {
-            id: generateId(),
-            role: 'bot',
-            name: 'Bot',
-            avatar: PatternFlyAvatar,
-            content: sendContent,
-            timestamp: getDate(),
-          },
-        );
+    const lowerCaseMsg = message.toLowerCase();
+    switch (lowerCaseMsg) {
+      case 'how do i report a bug?':
+      case 'how do i report a bug':
+        onQuickResponseOneClick(message);
         break;
-      case 'It’s not working. What else can I do?':
-      case "It's not working. What else can I do?":
-        await sendMessagePair(
-          {
-            id: generateId(),
-            role: 'user',
-            avatar: UserAvatar,
-            avatarProps: { isBordered: true },
-            content: message,
-            timestamp: getDate(),
-          },
-          {
-            id: generateId(),
-            role: 'bot',
-            name: 'Bot',
-            avatar: PatternFlyAvatar,
-            content: `Do you want to file a Red Hatter help request? Alternatively, upload an image of your issue.`,
-            quickResponses: [
-              {
-                id: '4',
-                content: 'Red Hatter Help Request',
-                onClick: onQuickResponseFourClick,
-              },
-              { id: '5', content: 'Upload an image', onClick: onQuickResponseFiveClick },
-            ],
-            timestamp: getDate(),
-          },
-        );
+      case 'what is patternfly?':
+      case 'what is patternfly':
+        onQuickResponseTwoClick(message);
+        break;
+      case 'what are design tokens?':
+      case 'what are design tokens':
+        onQuickResponseThreeClick(message);
         break;
       default:
-        sendUserMessage({
-          id: generateId(),
-          role: 'user',
-          avatar: UserAvatar,
-          avatarProps: { isBordered: true },
-          content: message,
-          attachments: file ? [file] : undefined,
-          timestamp: getDate(),
-        });
+        await sendMessagePair(
+          {
+            id: generateId(),
+            role: 'user',
+            avatar: UserAvatar,
+            avatarProps: { isBordered: true },
+            content: message,
+            attachments: file ? [file] : undefined,
+            timestamp: getDate(),
+          },
+          {
+            id: generateId(),
+            role: 'bot',
+            name: 'Bot',
+            avatar: PatternFlyAvatar,
+            content: 'This is beyond my knowledge base. Try asking something else.',
+            timestamp: getDate(),
+          },
+        );
+        if (file) {
+          setFile(undefined);
+        }
         if (file) {
           setFile(undefined);
         }
@@ -712,7 +618,7 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
                 <ChatbotContent>
                   {/* Update the announcement prop on MessageBox whenever a new message is sent
                  so that users of assistive devices receive sufficient context  */}
-                  <MessageBox announcement={announcement}>
+                  <MessageBox position="bottom" announcement={announcement}>
                     {error && (
                       <ChatbotAlert
                         variant="danger"
