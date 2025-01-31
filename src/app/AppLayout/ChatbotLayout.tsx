@@ -317,7 +317,9 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
     await sendMessagePair(
       {
         id: generateId(),
-        content: 'What is PatternFly?',
+        content: `Learn about PatternFly
+        
+What is the PatternFly design system and how do I use it?`,
         role: 'user',
         avatar: UserAvatar,
         avatarProps: { isBordered: true },
@@ -350,8 +352,8 @@ const ChatbotLayout: React.FunctionComponent<ChatbotLayoutProps> = ({
 
   const welcomePrompts = [
     {
-      title: 'What is PatternFly?',
-      message: "Learn about the PatternFly design system and how it's used.",
+      title: 'Learn about PatternFly',
+      message: 'What is the PatternFly design system and how do I use it?',
       onClick: onTopicOneClick,
     },
   ];
